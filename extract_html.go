@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -38,4 +39,33 @@ func getFirstParagraphFromHTML(html string) string {
 	}
 
 	return strings.TrimSpace(p)
+}
+
+func getURLsFromHTML(htmlBody string, baseURL *url.URL) ([]string, error) {
+	return extractLinks(htmlBody, baseURL, "a[href]", "href")
+	// doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlBody))
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to parse HTMl: %w", err)
+	// }
+	// var urls []string
+	// var fullURL string
+	// doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
+	// 	link, _ := s.Attr("href")
+	// 	parsedLink, err := url.Parse(link)
+	// 	if err != nil {
+	// 		return
+	// 	}
+	// 	// fmt.Printf("Base url: %s\nselection values: %s\n", baseURL.String(), parsedLink.String())
+	// 	if parsedLink.Scheme == "" {
+	// 		fullURL = baseURL.String() + parsedLink.String()
+	// 	} else {
+	// 		fullURL = parsedLink.String()
+	// 	}
+	// 	urls = append(urls, fullURL)
+	// })
+	// return urls, nil
+}
+
+func getImagesFromHTML(htmlBody string, baseURL *url.URL) ([]string, error) {
+	return extractLinks(htmlBody, baseURL, "img", "src")
 }
