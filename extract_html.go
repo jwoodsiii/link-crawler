@@ -25,20 +25,17 @@ func getHeadingFromHTML(html string) string {
 }
 
 func getFirstParagraphFromHTML(html string) string {
-	var firstPara string
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(html))
 	if err != nil {
 		return fmt.Errorf("failed to parse HTML: %w", err).Error()
 	}
-	doc.Find("main p").EachWithBreak(func(i int, s *goquery.Selection) bool {
-		firstPara = s.Text()
-		return false
-	})
-	if firstPara == "" {
-		doc.Find("p").EachWithBreak(func(i int, s *goquery.Selection) bool {
-			firstPara = s.Text()
-			return false
-		})
+	main := doc.Find("main")
+	var p string
+	if main.Length() > 0 {
+		p = main.Find("p").First().Text()
+	} else {
+		p = doc.Find("p").First().Text()
 	}
-	return firstPara
+
+	return strings.TrimSpace(p)
 }
