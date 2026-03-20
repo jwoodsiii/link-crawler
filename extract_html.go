@@ -2,11 +2,20 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+type PageData struct {
+	URL            string
+	Heading        string
+	FirstParagraph string
+	OutgoingLinks  []string
+	ImageURLs      []string
+}
 
 func getHeadingFromHTML(html string) string {
 	var header string
@@ -43,29 +52,28 @@ func getFirstParagraphFromHTML(html string) string {
 
 func getURLsFromHTML(htmlBody string, baseURL *url.URL) ([]string, error) {
 	return extractLinks(htmlBody, baseURL, "a[href]", "href")
-	// doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlBody))
-	// if err != nil {
-	// 	return nil, fmt.Errorf("failed to parse HTMl: %w", err)
-	// }
-	// var urls []string
-	// var fullURL string
-	// doc.Find("a[href]").Each(func(_ int, s *goquery.Selection) {
-	// 	link, _ := s.Attr("href")
-	// 	parsedLink, err := url.Parse(link)
-	// 	if err != nil {
-	// 		return
-	// 	}
-	// 	// fmt.Printf("Base url: %s\nselection values: %s\n", baseURL.String(), parsedLink.String())
-	// 	if parsedLink.Scheme == "" {
-	// 		fullURL = baseURL.String() + parsedLink.String()
-	// 	} else {
-	// 		fullURL = parsedLink.String()
-	// 	}
-	// 	urls = append(urls, fullURL)
-	// })
-	// return urls, nil
 }
 
 func getImagesFromHTML(htmlBody string, baseURL *url.URL) ([]string, error) {
 	return extractLinks(htmlBody, baseURL, "img", "src")
+}
+
+func extractPageData(html string, pageURL *url.URL) PageData {
+	heading := getHeadingFromHTML(html)
+	firstPara := getFirstParagraphFromHTML(html)
+	outgoingLinks, err := getURLsFromHTML(html, pageURL)
+	if err != nil {
+		log.Printf("Error getting URLs from HTML: %v", err)
+	}
+	imgURLs, err := getImagesFromHTML(html, pageURL)
+	if err != nil {
+		log.Printf("Error getting images from HTML: %v", err)
+	}
+	return PageData{
+		URL:            pageURL.String(),
+		Heading:        heading,
+		FirstParagraph: firstPara,
+		OutgoingLinks:  outgoingLinks,
+		ImageURLs:      imgURLs,
+	}
 }

@@ -6,6 +6,45 @@ import (
 	"testing"
 )
 
+func TestExtractPageData(t *testing.T) {
+	tests := []struct {
+		name      string
+		inputURL  string
+		inputBody string
+		expected  PageData
+	}{
+		{
+			name:     "all fields extract",
+			inputURL: "https://crawler-test.com",
+			inputBody: `<html><body>
+	        <h1>Test Title</h1>
+	        <p>This is the first paragraph.</p>
+	        <a href="/link1">Link 1</a>
+	        <img src="/image1.jpg" alt="Image 1">
+	    </body></html>`,
+			expected: PageData{
+				URL:            "https://crawler-test.com",
+				Heading:        "Test Title",
+				FirstParagraph: "This is the first paragraph.",
+				OutgoingLinks:  []string{"https://crawler-test.com/link1"},
+				ImageURLs:      []string{"https://crawler-test.com/image1.jpg"},
+			},
+		},
+	}
+	for i, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			url, err := url.Parse(tc.inputURL)
+			if err != nil {
+				t.Errorf("Test %v - %s FAIL: error parsing url", i, tc.name)
+			}
+			actual := extractPageData(tc.inputBody, url)
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("Test %v - %s FAIL: expected: %v, inputURL: %v, actual: %v", i, tc.name, tc.expected, tc.inputURL, actual)
+			}
+		})
+	}
+}
+
 func TestGetImagesFromHTML(t *testing.T) {
 	tests := []struct {
 		name      string
