@@ -58,19 +58,23 @@ func getImagesFromHTML(htmlBody string, baseURL *url.URL) ([]string, error) {
 	return extractLinks(htmlBody, baseURL, "img", "src")
 }
 
-func extractPageData(html string, pageURL *url.URL) PageData {
+func extractPageData(html string, pageURL string) PageData {
 	heading := getHeadingFromHTML(html)
 	firstPara := getFirstParagraphFromHTML(html)
-	outgoingLinks, err := getURLsFromHTML(html, pageURL)
+	pgURL, err := url.Parse(pageURL)
+	if err != nil {
+		log.Printf("Error parsing url string")
+	}
+	outgoingLinks, err := getURLsFromHTML(html, pgURL)
 	if err != nil {
 		log.Printf("Error getting URLs from HTML: %v", err)
 	}
-	imgURLs, err := getImagesFromHTML(html, pageURL)
+	imgURLs, err := getImagesFromHTML(html, pgURL)
 	if err != nil {
 		log.Printf("Error getting images from HTML: %v", err)
 	}
 	return PageData{
-		URL:            pageURL.String(),
+		URL:            pgURL.String(),
 		Heading:        heading,
 		FirstParagraph: firstPara,
 		OutgoingLinks:  outgoingLinks,

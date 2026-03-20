@@ -15,7 +15,6 @@ func TestNormalizeURL(t *testing.T) {
 			inputURL: "https://www.boot.dev/blog/path",
 			expected: "www.boot.dev/blog/path",
 		},
-		// add more test cases here
 		{
 			name:     "trailing slash",
 			inputURL: "https://www.boot.dev/blog/path/",

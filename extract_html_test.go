@@ -33,11 +33,7 @@ func TestExtractPageData(t *testing.T) {
 	}
 	for i, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			url, err := url.Parse(tc.inputURL)
-			if err != nil {
-				t.Errorf("Test %v - %s FAIL: error parsing url", i, tc.name)
-			}
-			actual := extractPageData(tc.inputBody, url)
+			actual := extractPageData(tc.inputBody, tc.inputURL)
 			if !reflect.DeepEqual(actual, tc.expected) {
 				t.Errorf("Test %v - %s FAIL: expected: %v, inputURL: %v, actual: %v", i, tc.name, tc.expected, tc.inputURL, actual)
 			}
