@@ -3,3 +3,6 @@ link-crawler
 
 # Agent files
 AGENTS.md
+
+# output files
+report.json

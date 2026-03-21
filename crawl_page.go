@@ -6,9 +6,9 @@ import (
 )
 
 func (cfg *config) crawlPage(rawCurrURL string) {
-	<-cfg.concurrencyControl
+	cfg.concurrencyControl <- struct{}{} // acquire slot
 	defer func() {
-		<-cfg.concurrencyControl
+		<-cfg.concurrencyControl // release slot
 		cfg.wg.Done()
 	}()
 	if cfg.maxPagesReached() {
@@ -40,7 +40,8 @@ func (cfg *config) crawlPage(rawCurrURL string) {
 	cfg.setPageData(currURL, pgData)
 	for _, link := range pgData.OutgoingLinks {
 		log.Printf("Spawing goroutine to crawl %s", link)
-		cfg.concurrentCrawlPage(link)
+		cfg.wg.Add(1)
+		go cfg.crawlPage(link)
 	}
 	log.Printf("crawling complete\n")
 }

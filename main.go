@@ -19,10 +19,12 @@ func main() {
 		fmt.Println("Failed to configure: %v", err)
 		os.Exit(1)
 	}
-	cfg.concurrentCrawlPage(rawBaseURL)
+	fmt.Printf("starting crawl of: %s...\n", rawBaseURL)
+	cfg.wg.Add(1)
+	go cfg.crawlPage(rawBaseURL)
 	cfg.wg.Wait()
 
-	for k, v := range cfg.pages {
-		fmt.Printf("%s: %s\n", k, v)
+	if err = writeJSONReport(cfg.pages, "report.json"); err != nil {
+		fmt.Println("Error writing json report:", err)
 	}
 }
