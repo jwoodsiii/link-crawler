@@ -6,8 +6,15 @@ import (
 )
 
 func (cfg *config) crawlPage(rawCurrURL string) {
-	defer cfg.wg.Done()
 	<-cfg.concurrencyControl
+	defer func() {
+		<-cfg.concurrencyControl
+		cfg.wg.Done()
+	}()
+	if cfg.maxPagesReached() {
+		log.Print("max pages reached, stopping crawl")
+		return
+	}
 	curr, err := url.Parse(rawCurrURL)
 	if err != nil {
 		log.Fatalf("Invalid URL %s", rawCurrURL)
@@ -40,7 +47,12 @@ func (cfg *config) crawlPage(rawCurrURL string) {
 
 func (cfg *config) concurrentCrawlPage(rawCurrURL string) {
 	cfg.wg.Add(1)
-	var empty struct{}
-	cfg.concurrencyControl <- empty
+	cfg.concurrencyControl <- struct{}{}
 	go cfg.crawlPage(rawCurrURL)
+}
+
+func (cfg *config) maxPagesReached() bool {
+	cfg.mu.Lock()
+	defer cfg.mu.Unlock()
+	return len(cfg.pages) >= cfg.maxPages
 }

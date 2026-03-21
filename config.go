@@ -7,6 +7,15 @@ import (
 	"sync"
 )
 
+type config struct {
+	pages              map[string]PageData
+	baseURL            *url.URL
+	mu                 *sync.Mutex
+	concurrencyControl chan struct{}
+	wg                 *sync.WaitGroup
+	maxPages           int
+}
+
 func (cfg *config) addPageVisit(normalizedURL string) (isFirst bool) {
 	cfg.mu.Lock()
 	defer cfg.mu.Unlock()
@@ -26,7 +35,7 @@ func (cfg *config) setPageData(url string, data PageData) {
 	cfg.pages[url] = data
 }
 
-func configure(rawBaseURL string, maxConcurrency int) (*config, error) {
+func configure(rawBaseURL string, maxConcurrency, maxPages int) (*config, error) {
 	baseURL, err := url.Parse(rawBaseURL)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't parse base URL: %v", err)
@@ -38,5 +47,6 @@ func configure(rawBaseURL string, maxConcurrency int) (*config, error) {
 		mu:                 &sync.Mutex{},
 		concurrencyControl: make(chan struct{}, maxConcurrency),
 		wg:                 &sync.WaitGroup{},
+		maxPages:           maxPages,
 	}, nil
 }
